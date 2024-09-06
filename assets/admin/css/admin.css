@@ -1,0 +1,47 @@
+.am-custom-product-category label {
+   display: block;
+   font-size: 16px;
+   font-weight: 500;
+   margin: 10px 0;
+}
+.am-custom-product-category select,
+.am-custom-product-category input {
+   width: 100%;
+   padding: 5px 10px;
+}
+.am-custom-product-category input#am-sq-price {
+   width: unset;
+   margin-left: 20px;
+}
+.am-custom-price-wrapper {
+   display: flex;
+}
+.am-custom-haube-length-wrap {
+   display: flex;
+   flex-direction: row;
+   justify-content: space-between;
+   align-items: center;
+}
+.am-custom-haube-length-wrap > div {
+   flex: 1;
+   margin-right: 20px;
+}
+.am-custom-haube-length-wrap > div:last-child {
+   margin-right: 0;
+}
+.am-custom-haube-length-wrap label {
+   display: block;
+   margin-bottom: 5px;
+}
+.am-custom-haube-length-wrap input[type="text"] {
+   width: 100%;
+   box-sizing: border-box;
+}
+input.am-price-per-square-meter_zuchi {
+   height: 45px;
+   width: 85%;
+}
+input.am-price-per-square-meter {
+   width: 100%;
+}
+
