@@ -1,7 +1,21 @@
 jQuery(document).ready(function($) {
 
-
    $('.product .price').remove();
+
+   $('form.cart').on('submit', function(e) {
+      // ... (existing code)
+  
+      let customPrice = parseFloat($('.am-custom-field-price-input').val());
+      if (!isNaN(customPrice)) {
+          $('<input>').attr({
+              type: 'hidden',
+              name: 'custom_price',
+              value: customPrice
+          }).appendTo('form.cart');
+      }
+  
+      // ... (rest of the existing code)
+  });
 
    function priceChange() {
       var selectedThickness =  $('#am_thickness').val();
@@ -17,21 +31,27 @@ jQuery(document).ready(function($) {
    
    //preventing form submission
    $('form.cart').on('submit', function(e) {
+      console.log('entered');
       let customFieldSelect = $('#custom_field_select').val();
-      let thicknessVal = $('#am_thickness').val();
-      let customLength = $('#custom_length').val();
-      let customWidth = $('#custom_width').val();
+      let thicknessVal      = $('#am_thickness').val();
+      let customLength      = $('#custom_length').val();
+      let customWidth       = $('#custom_width').val();
       let customHaubeHeight = $('#haube_custom_height').val();
-      let customHaubewidth = $('#haube_custom_width').val();
+      let customHaubewidth  = $('#haube_custom_width').val();
       let customHaubelength = $('#haube_custom_length').val();
+      let customPriceHaube  = $('.am-custom-field-price-input').val();
+      console.log(customPriceHaube);
 
       if( AM_ARR.category == 'haube' ) {
-         if ( customHaubelength === '' || customHaubewidth === '' || customHaubeHeight === '' || thicknessVal == ''  ) {
+         if ( customHaubelength === '' || customHaubewidth === '' || customHaubeHeight === '' || thicknessVal == '' ) {
             alert('Please fill in all required fields.');
             e.preventDefault();
             return false;
-        }
-      } else {
+        } 
+      } else if ( customPriceHaube === '' ) {
+         e.preventDefault();
+         return false;
+     } else {
          if ( customFieldSelect === '' || customLength === '' || customWidth === '' || thicknessVal === '' ) {
             alert('Please fill in all required fields.');
             e.preventDefault();
@@ -321,6 +341,7 @@ jQuery(document).ready(function($) {
          let roundedPrice = finalPrice.toFixed(2);
 
          $('.am-haube-final-price').text( `CHF ${roundedPrice}` );
+         $('.am-custom-field-price-input').val( roundedPrice );
          $('.new-price').remove();
          var newPrice = `<h2 class="new-price">CHF ${roundedPrice}</h2>`; 
          $('.product .product_title').after(newPrice);

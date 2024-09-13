@@ -32,6 +32,21 @@ class Front {
      * Add custom data to cart item
      */
     public function cart_item_data($cart_item_data, $product_id, $variation_id) {
+        // if (isset($_POST['haube_custom_length'], $_POST['haube_custom_width'], $_POST['haube_custom_height'], $_POST['am_thickness'], $_POST['thickness_value'])) {
+        //     $cart_item_data['haube_custom_length'] = sanitize_text_field($_POST['haube_custom_length']);
+        //     $cart_item_data['haube_custom_width'] = sanitize_text_field($_POST['haube_custom_width']);
+        //     $cart_item_data['haube_custom_height'] = sanitize_text_field($_POST['haube_custom_height']);
+        //     $cart_item_data['am_thickness'] = sanitize_text_field($_POST['am_thickness']);
+        //     $cart_item_data['thickness'] = sanitize_text_field($_POST['thickness_value']);
+        //     $cart_item_data['unique_key'] = md5(microtime() . rand());
+
+        //     $custom_price = WC()->session->get('custom_price_' . $product_id);
+        //     if (!is_null($custom_price)) {
+        //         $cart_item_data['custom_price'] = $custom_price;
+        //         WC()->session->__unset('custom_price_' . $product_id);
+        //     }
+        // }
+
         if (isset($_POST['haube_custom_length'], $_POST['haube_custom_width'], $_POST['haube_custom_height'], $_POST['am_thickness'], $_POST['thickness_value'])) {
             $cart_item_data['haube_custom_length'] = sanitize_text_field($_POST['haube_custom_length']);
             $cart_item_data['haube_custom_width'] = sanitize_text_field($_POST['haube_custom_width']);
@@ -39,11 +54,10 @@ class Front {
             $cart_item_data['am_thickness'] = sanitize_text_field($_POST['am_thickness']);
             $cart_item_data['thickness'] = sanitize_text_field($_POST['thickness_value']);
             $cart_item_data['unique_key'] = md5(microtime() . rand());
-
-            $custom_price = WC()->session->get('custom_price_' . $product_id);
-            if (!is_null($custom_price)) {
-                $cart_item_data['custom_price'] = $custom_price;
-                WC()->session->__unset('custom_price_' . $product_id);
+            
+            // Add this line to store the custom price
+            if (isset($_POST['custom_price'])) {
+                $cart_item_data['custom_price'] = floatval($_POST['custom_price']);
             }
         }
 
@@ -268,7 +282,7 @@ class Front {
                 <p class="am-haube-custom-field">
                     <span>Finaler Preis pro Stück</span>
                     <span class="am-haube-final-price"></span>
-                    <input type="number" class="am-custom-field-price-input">
+                    <input type="hidden" class="am-custom-field-price-input" name="am-custom-field-price-input" value="">
                 </p>
                 <div class="am-haube-reset-link">
                     <p class="reset_haube_fields">Leeren</p>
@@ -342,20 +356,37 @@ class Front {
         wp_localize_script( 'front-acrylic-measurement-js', 'AM_ARR', $data );
     }
 
-    public function handle_haube_custom_price_update(){
+    // public function handle_haube_custom_price_update(){
 
-        $am_nonce = isset( $_POST['nonce'] ) ? $_POST['nonce'] : '';
-        check_ajax_referer( 'am_nonce', 'nonce' );
+    //     $am_nonce = isset( $_POST['nonce'] ) ? $_POST['nonce'] : '';
+    //     check_ajax_referer( 'am_nonce', 'nonce' );
 
-        $product_id = intval( $_POST['product_id'] );
-        $custom_price = floatval( $_POST['price'] );
+    //     $product_id = intval( $_POST['product_id'] );
+    //     $custom_price = floatval( $_POST['price'] );
 
-        if ($product_id > 0 && $custom_price > 0 ) {
-			if (!WC()->session->has_session()) {
-                WC()->session->set_customer_session_cookie(true);
-            }
-            WC()->session->set('custom_price_' . $product_id, $custom_price);
-            wp_send_json_success( 'price updated successfully' );
+    //     if ($product_id > 0 && $custom_price > 0 ) {
+	// 		if (!WC()->session->has_session()) {
+    //             WC()->session->set_customer_session_cookie(true);
+    //         }
+    //         WC()->session->set('custom_price_' . $product_id, $custom_price);
+    //         wp_send_json_success( 'price updated successfully' );
+    //     } else {
+    //         wp_send_json_error('Invalid data');
+    //     }
+    //     wp_die();
+    // }
+
+    public function handle_haube_custom_price_update() {
+        $am_nonce = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+        check_ajax_referer('am_nonce', 'nonce');
+    
+        $product_id = intval($_POST['product_id']);
+        $custom_price = floatval($_POST['price']);
+    
+        if ($product_id > 0 && $custom_price > 0) {
+            // Remove session-based storage
+            // WC()->session->set('custom_price_' . $product_id, $custom_price);
+            wp_send_json_success('price updated successfully');
         } else {
             wp_send_json_error('Invalid data');
         }
@@ -363,7 +394,18 @@ class Front {
     }
 
     function adjust_price_based_on_custom_logic( $cart_object ) {
-        // Ensure the cart isn't empty
+        // // Ensure the cart isn't empty
+        // if (is_admin() && !defined('DOING_AJAX')) {
+        //     return;
+        // }
+    
+        // foreach ($cart_object->get_cart() as $cart_item_key => $cart_item) {
+        //     if (isset($cart_item['custom_price'])) {
+        //         $custom_price = $cart_item['custom_price'];
+        //         $cart_item['data']->set_price($custom_price);
+        //     }
+        // }
+
         if (is_admin() && !defined('DOING_AJAX')) {
             return;
         }
