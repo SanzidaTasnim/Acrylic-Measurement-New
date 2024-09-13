@@ -3,7 +3,7 @@
  * Plugin Name:       Acrylic Measurement
  * Plugin URI:        
  * Description:       It's a plugin for measuring based on category and measuring units.
- * Version:           1.0.2
+ * Version:           1.2.0
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Sanzida Tasnim

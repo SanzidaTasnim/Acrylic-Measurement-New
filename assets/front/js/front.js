@@ -2,21 +2,6 @@ jQuery(document).ready(function($) {
 
    $('.product .price').remove();
 
-   $('form.cart').on('submit', function(e) {
-      // ... (existing code)
-  
-      let customPrice = parseFloat($('.am-custom-field-price-input').val());
-      if (!isNaN(customPrice)) {
-          $('<input>').attr({
-              type: 'hidden',
-              name: 'custom_price',
-              value: customPrice
-          }).appendTo('form.cart');
-      }
-  
-      // ... (rest of the existing code)
-  });
-
    function priceChange() {
       var selectedThickness =  $('#am_thickness').val();
       AM_ARR.price = selectedThickness;
@@ -28,37 +13,107 @@ jQuery(document).ready(function($) {
    $('#am_thickness').change(function() {
       priceChange();
    });
-   
-   //preventing form submission
-   $('form.cart').on('submit', function(e) {
-      console.log('entered');
-      let customFieldSelect = $('#custom_field_select').val();
-      let thicknessVal      = $('#am_thickness').val();
-      let customLength      = $('#custom_length').val();
-      let customWidth       = $('#custom_width').val();
-      let customHaubeHeight = $('#haube_custom_height').val();
-      let customHaubewidth  = $('#haube_custom_width').val();
-      let customHaubelength = $('#haube_custom_length').val();
-      let customPriceHaube  = $('.am-custom-field-price-input').val();
-      console.log(customPriceHaube);
 
-      if( AM_ARR.category == 'haube' ) {
-         if ( customHaubelength === '' || customHaubewidth === '' || customHaubeHeight === '' || thicknessVal == '' ) {
-            alert('Please fill in all required fields.');
-            e.preventDefault();
-            return false;
-        } 
-      } else if ( customPriceHaube === '' ) {
-         e.preventDefault();
-         return false;
-     } else {
-         if ( customFieldSelect === '' || customLength === '' || customWidth === '' || thicknessVal === '' ) {
-            alert('Please fill in all required fields.');
-            e.preventDefault();
-            return false;
-        }
+   $('form.cart').on('submit', function(e) {
+      let customFieldSelect = $('#custom_field_select').val();
+      let thicknessVal = $('#am_thickness').val();
+      let customLength = $('#custom_length').val();
+      let customWidth = $('#custom_width').val();
+      let customHaubeHeight = $('#haube_custom_height').val();
+      let customHaubeWidth = $('#haube_custom_width').val();
+      let customHaubeLength = $('#haube_custom_length').val();
+      
+      let isHaube = AM_ARR.category === 'haube';
+      let isZuschnitt = AM_ARR.category === 'zuschnitt';
+  
+      // Validation for Haube products
+      if (isHaube) {
+          if (customHaubeLength === '' || customHaubeWidth === '' || customHaubeHeight === '' || thicknessVal === '') {
+              alert('Please fill in all required fields.');
+              e.preventDefault();
+              return false;
+          }
+          let customPrice = parseFloat($('.am-haube-final-price').text().replace('CHF ', ''));
+          if (!isNaN(customPrice)) {
+              $('<input>').attr({
+                  type: 'hidden',
+                  name: 'custom_price',
+                  value: customPrice
+              }).appendTo('form.cart');
+          }
       }
-   });
+      // Validation for Zuschnitt products
+      else if (isZuschnitt) {
+          if (customFieldSelect === '' || customLength === '' || customWidth === '' || thicknessVal === '') {
+              alert('Please fill in all required fields.');
+              e.preventDefault();
+              return false;
+          }
+          let customPrice = parseFloat($('.am-custom-field-price').text().replace('CHF ', ''));
+          if (!isNaN(customPrice)) {
+              $('<input>').attr({
+                  type: 'hidden',
+                  name: 'custom_price',
+                  value: customPrice
+              }).appendTo('form.cart');
+          }
+      }
+  });
+  
+  // Update the sending_data_zuschnitt function
+  function sending_data_zuschnitt() {
+      let customFieldSelect = $('#custom_field_select').val();
+      let customLength = parseFloat($('#custom_length').val());
+      let customWidth = parseFloat($('#custom_width').val());
+  
+      if (AM_ARR.category == 'zuschnitt') {
+          if (customFieldSelect !== '' && customLength !== '' && customWidth !== '') {
+              let finalPrice = $('.am-custom-field-price').text();
+              if (finalPrice !== '') {
+                  finalPrice = finalPrice.match(/CHF (\d+\.\d+)/)[1];
+                  var updatedPrice = parseFloat(finalPrice);
+                  var quantity = jQuery('.input-text.qty').val();
+                  var elementId = $('.product').attr('id');
+                  var product_id = elementId.split('-')[1];
+  
+                  function ajax_call() {
+                      let quantity_updated = jQuery('.input-text.qty').val();
+  
+                      $.ajax({
+                          url: AM_ARR.admin_url,
+                          type: 'POST',
+                          data: {
+                              action: 'update_haube_custom_price',
+                              price: updatedPrice,
+                              quantity: quantity_updated,
+                              product_id: product_id,
+                              nonce: AM_ARR.nonce
+                          },
+                          success: function(response) {
+                              console.log('Price updated', response);
+                          },
+                          error: function(response) {
+                              console.log(response);
+                          }
+                      });
+                  }
+  
+                  if (quantity == 1) {
+                      ajax_call();
+                  }
+                  $('.input-text.qty').change(function() {
+                      ajax_call();
+                  });
+              }
+          }
+      }
+  }
+  
+  // Make sure to call sending_data_zuschnitt() when relevant fields change
+  $('#custom_field_select, #custom_length, #custom_width, #am_thickness').change(function() {
+      totalPriceCalculate();
+      sending_data_zuschnitt();
+  });
 
    // Function to perform calculation
    function performCalculation() {
@@ -132,56 +187,6 @@ jQuery(document).ready(function($) {
          var newPrice = `<h2 class="new-price">CHF ${calculatedPrice}</h2>`; 
          $('.product .product_title').after(newPrice);
       }      
-   }
-
-   function sending_data_zuschnitt(){
-      let customFieldSelect = $('#custom_field_select').val();
-      let customLength = parseFloat($('#custom_length').val());
-      let customWidth = parseFloat($('#custom_width').val());
-
-      if ( AM_ARR.category == 'zuschnitt' ) {
-        
-         if ( customFieldSelect !== '' && customLength !== '' && customWidth !== '' ){
-            let finalPrice =  $('.am-custom-field-price').text();
-            if ( finalPrice !== '' ){
-               finalPrice = finalPrice.match(/CHF (\d+\.\d+)/)[1];
-               var updatedPrice = parseFloat(finalPrice);
-               var quantity = jQuery('.input-text.qty').val(); 
-               var elementId = $('.product').attr('id');
-               var product_id = elementId.split('-')[1];
-
-               function ajax_call(){
-
-                  let quantity_updated = jQuery('.input-text.qty').val(); 
-
-                  $.ajax({
-                     url:  AM_ARR.admin_url,
-                     type: 'POST',
-                     data: {
-                           action: 'update_haube_custom_price',
-                           price: updatedPrice,
-                           quantity: quantity_updated,
-                           product_id: product_id,
-                           nonce: AM_ARR.nonce
-                     },
-                     success: function(response) {
-                           console.log('Price updated', response);
-                     },
-                     error: function(response) {
-                        console.log(response);
-                     }
-                  });
-               }
-
-               if (quantity == 1){
-                  ajax_call();
-               }
-               $('.input-text.qty').change(function(){
-                  ajax_call();
-               });
-            }
-         }     
-      } 
    }
 
    // ratio 1:5
