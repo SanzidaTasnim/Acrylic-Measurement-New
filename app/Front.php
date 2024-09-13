@@ -18,7 +18,7 @@ class Front {
         add_action( 'woocommerce_single_product_summary', [ $this, 'custom_product_data_to_js' ], 30 );
         add_action( 'wp_ajax_update_haube_custom_price', [ $this, 'handle_haube_custom_price_update' ] );
         add_action( 'wp_ajax_nopriv_update_haube_custom_price', [ $this, 'handle_haube_custom_price_update' ] );
-        add_filter( 'woocommerce_before_calculate_totals', [ $this, 'adjust_price_based_on_custom_logic'], 20 );
+        add_filter( 'woocommerce_before_calculate_totals', [ $this, 'adjust_price_based_on_custom_logic'], 40 );
         //new code
         add_filter( 'woocommerce_add_cart_item_data', [ $this, 'cart_item_data' ], 10, 3 );
         add_filter( 'woocommerce_get_item_data' , [ $this, 'get_item_data' ], 10, 2 );
@@ -74,7 +74,7 @@ class Front {
             $item_data[] = ['name' => 'Breite', 'value' => $cart_item['haube_custom_width']];
             $item_data[] = ['name' => 'Höhe', 'value' => $cart_item['haube_custom_height']];
             $item_data[] = ['name' => 'Materialdicke', 'value' => $cart_item['thickness'] . 'mm'];
-            $item_data[] = ['name' => 'Price Per Sqm', 'value' => wc_price($cart_item['am_thickness'])];
+            // $item_data[] = ['name' => 'Price Per Sqm', 'value' => wc_price($cart_item['am_thickness'])];
         }
 
         if (isset($cart_item['custom_length'], $cart_item['custom_width'], $cart_item['custom_field_select'], $cart_item['am_thickness'], $cart_item['thickness'])) {
@@ -82,7 +82,7 @@ class Front {
             $item_data[] = ['name' => 'Breite', 'value' => $cart_item['custom_width']];
             $item_data[] = ['name' => 'Kanten', 'value' => $cart_item['custom_field_select']];
             $item_data[] = ['name' => 'Materialdicke', 'value' => $cart_item['thickness'] . 'mm'];
-            $item_data[] = ['name' => 'Price Per Sqm', 'value' => wc_price($cart_item['am_thickness'])];
+            // $item_data[] = ['name' => 'Price Per Sqm', 'value' => wc_price($cart_item['am_thickness'])];
         }
 
         return $item_data;
@@ -97,7 +97,7 @@ class Front {
             $item->add_meta_data('Breite', $values['haube_custom_width']);
             $item->add_meta_data('Höhe', $values['haube_custom_height']);
             $item->add_meta_data('Materialdicke', $values['thickness'] . 'mm');
-            $item->add_meta_data('Price Per Sqm', wc_price($values['am_thickness']));
+            // $item->add_meta_data('Price Per Sqm', wc_price($values['am_thickness']));
         }
 
         if (isset($values['custom_length'], $values['custom_width'], $values['custom_field_select'], $values['am_thickness'], $values['thickness'])) {
@@ -105,7 +105,7 @@ class Front {
             $item->add_meta_data('Breite', $values['custom_width']);
             $item->add_meta_data('Kanten', $values['custom_field_select']);
             $item->add_meta_data('Materialdicke', $values['thickness'] . 'mm');
-            $item->add_meta_data('Price Per Sqm', wc_price($values['am_thickness']));
+            // $item->add_meta_data('Price Per Sqm', wc_price($values['am_thickness']));
         }
     }
 
@@ -268,6 +268,7 @@ class Front {
                 <p class="am-haube-custom-field">
                     <span>Finaler Preis pro Stück</span>
                     <span class="am-haube-final-price"></span>
+                    <input type="number" class="am-custom-field-price-input">
                 </p>
                 <div class="am-haube-reset-link">
                     <p class="reset_haube_fields">Leeren</p>

@@ -104,6 +104,7 @@ jQuery(document).ready(function($) {
 
       if ( calculatedPrice !== null && !isNaN(calculatedPrice) ){
          $('.am-custom-field-price').text(`CHF ${calculatedPrice}`);
+         $('am-custom-field-price-input').attr( 'value', `CHF ${calculatedPrice}`);
           // Remove the old price if it exists
          $('.new-price').remove();
       
